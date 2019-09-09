@@ -15,30 +15,34 @@ App = React.createClass({
             loading: true 
         });
 
-        this.getGif(searchingText, function (gif) { 
+        this.getGif(searchingText).then(gif=> { 
             this.setState({
                 loading: false, 
-                gif: gif, 
+                gif, 
                 searchingText: searchingText 
             });
-        }.bind(this));
+        })
     },
 
-    getGif: function (searchingText, callback) {
-        var url = GIPHY_API_URL + '/v1/gifs/random?api_key=' + GIPHY_PUB_KEY + '&tag=' + searchingText; 
-        var xhr = new XMLHttpRequest(); 
-        xhr.open('GET', url);
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                var data = JSON.parse(xhr.responseText).data; 
-                var gif = { 
-                    url: data.fixed_width_downsampled_url,
-                    sourceUrl: data.url
+    getGif: function (searchingText) {
+        return new Promise(
+            function(resolve, reject) {    
+                var url = GIPHY_API_URL + '/v1/gifs/random?api_key=' + GIPHY_PUB_KEY + '&tag=' + searchingText; 
+                var xhr = new XMLHttpRequest(); 
+                xhr.open('GET', url);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText).data; 
+                        var gif = { 
+                            url: data.fixed_width_downsampled_url,
+                            sourceUrl: data.url
+                        };
+                        resolve(gif); 
+                    } else {reject(new Error('wrong responde'))}
                 };
-                callback(gif); 
+                xhr.send();
             }
-        };
-        xhr.send();
+        );
     },
 
     render: function() {
